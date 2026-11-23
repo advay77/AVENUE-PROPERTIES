@@ -1,0 +1,8 @@
+# Preview deployment for client review — not the live site yet.
+# Keeping it out of search so it cannot compete with the real domain later.
+# When the real domain goes live, replace the three lines below with:
+#   User-agent: *
+#   Allow: /
+#   Disallow: /setup.html
+User-agent: *
+Disallow: /

@@ -1,0 +1,10 @@
+# Vercel CLI link metadata (project + org ids) — machine-local
+.vercel
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+
+# Not used today, but keeps a future toolchain tidy
+node_modules/
