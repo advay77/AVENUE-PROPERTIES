@@ -5,9 +5,23 @@ alwaysApply: true
 
 # Avenue Properties — working rules
 
-A static marketing site for a real estate consultancy in Sector 75, Noida.
-**No build step, no framework, no package.json.** Open `index.html` and it runs.
-Do not introduce React, Vite, Tailwind, npm or a bundler unless explicitly asked.
+A marketing site for a real estate consultancy in Sector 75, Noida.
+
+**Two phases. Know which one you are in.**
+
+- **Phase 1 — the repo as it stands today.** A static site: no build step, no
+  framework, no `package.json`. Open `index.html` and it runs. While there is no
+  `package.json` in this repo, do not introduce React, Vite, Tailwind, npm or a
+  bundler. Everything below describes this phase.
+- **Phase 2 — the Next.js rebuild**, once `/app-next` exists. Stack, reasoning
+  and the data model are in **`STACK.md`**; the task prompts are in
+  `CURSOR-PROMPT.md` sections 9–16. Short version: Next.js 15 App Router +
+  TypeScript, PostgreSQL via Supabase, Prisma, Vercel. The public site keeps
+  this CSS as-is; Tailwind and shadcn/ui are used **only** under `/admin`.
+
+The hard rules below apply in both phases. The design system, the copy voice,
+the responsive contract and the evidence discipline carry over unchanged — only
+the rendering layer changes.
 
 ## File map
 
