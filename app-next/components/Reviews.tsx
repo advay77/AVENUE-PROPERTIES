@@ -64,11 +64,9 @@ export function Reviews({ place }: { place: GooglePlaceView }) {
           </div>
         )}
         <p className={place.live ? "gr-status is-live" : "gr-status"}>
-          {place.source === "places"
-            ? "Live from Google. Google returns at most five reviews and chooses which ones."
-            : place.source === "listing"
-              ? "Live rating from the Avenue Properties Google listing. Google chooses these lines. Names and the full list are on Google."
-              : "Could not reach Google just now. The button below still opens the official review box."}
+          {place.live
+            ? `Google sends five reviews to the site and refreshes that set about every hour. The full list${place.total != null ? ` of ${place.total.toLocaleString("en-IN")}` : ""} stays on Google.`
+            : "Could not reach Google just now. The button below still opens the official review box."}
         </p>
         <div className="gr-actions">
           <a className="btn btn--primary btn--block" href={place.writeReviewUrl} target="_blank" rel="noopener">
@@ -119,7 +117,7 @@ export function Reviews({ place }: { place: GooglePlaceView }) {
         <div className="gr-foot">
           <p className="gr-status">
             {place.live
-              ? "This is a selection from Google, not every review."
+              ? "These five are Google’s current selection. Read the rest on Google."
               : "Sample layout — these are not customer reviews."}
           </p>
           <a className="btn btn--ghost btn--sm" href={place.profileUrl} target="_blank" rel="noopener">

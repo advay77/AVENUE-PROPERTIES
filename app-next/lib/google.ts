@@ -56,36 +56,54 @@ export function parsePublicPlace(rawText: string): { rating: number | null; tota
   try {
     const data = JSON.parse(rawText.replace(/^\)\]\}'\s*/, "")) as unknown;
     const seen = new Set<string>();
-    const walk = (node: unknown) => {
+    const take = (node: unknown) => {
       if (!Array.isArray(node)) return;
-      const head = node[0] as unknown;
-      const text = node[1];
-      const stars = node[9];
-      if (
-        Array.isArray(head) &&
-        typeof head[0] === "string" &&
-        head[0].indexOf("google.com/maps/contrib/") !== -1 &&
-        typeof text === "string" &&
-        typeof stars === "number" &&
-        stars >= 1 &&
-        stars <= 5
-      ) {
-        const body = cleanQuote(text);
-        if (body.length > 12 && !seen.has(body)) {
-          seen.add(body);
-          const photoRaw = typeof head[2] === "string" ? head[2] : "";
-          reviews.push({
-            author: "Google review",
-            rating: stars,
-            time: "On Google",
-            text: body,
-            photo: photoRaw.indexOf("//") === 0 ? "https:" + photoRaw : photoRaw,
-          });
+      let name = "";
+      let photo = "";
+      let time = "";
+      let stars = 0;
+      let text = "";
+      let names = 0;
+      const walk = (current: unknown) => {
+        if (!Array.isArray(current)) return;
+        const photoUrl = current[1];
+        const contrib = current[2];
+        if (
+          typeof current[0] === "string" &&
+          typeof photoUrl === "string" &&
+          photoUrl.indexOf("googleusercontent.com") !== -1 &&
+          Array.isArray(contrib) &&
+          typeof contrib[0] === "string" &&
+          contrib[0].indexOf("maps/contrib/") !== -1 &&
+          current[0].length > 1 &&
+          current[0].length < 80 &&
+          current[0].indexOf("http") !== 0
+        ) {
+          names += 1;
+          name = current[0];
+          photo = photoUrl.indexOf("//") === 0 ? "https:" + photoUrl : photoUrl;
         }
+        if (!stars && current.length === 1 && typeof current[0] === "number" && current[0] >= 1 && current[0] <= 5) stars = current[0];
+        current.forEach((child) => {
+          if (typeof child !== "string") {
+            walk(child);
+            return;
+          }
+          if (!time && / ago$/.test(child) && child.length < 40) time = child;
+          const skip = child.indexOf("http") === 0 || child.indexOf("/") === 0 || child.indexOf("Dear ") === 0;
+          if (!skip && child.length > 40 && child.length > text.length) text = child;
+        });
+      };
+      walk(node);
+      const body = cleanQuote(text);
+      const key = name + body.slice(0, 48);
+      if (names === 1 && name && body && stars && !seen.has(key)) {
+        seen.add(key);
+        reviews.push({ author: name, rating: stars, time: time || "On Google", text: body, photo });
       }
-      node.forEach(walk);
+      node.forEach(take);
     };
-    walk(data);
+    take(data);
   } catch {
     /* rating may still be usable */
   }
@@ -99,7 +117,7 @@ async function fromPlacesApi(key: string): Promise<GooglePlaceView | null> {
       "X-Goog-FieldMask": "rating,userRatingCount,reviews",
     },
     signal: AbortSignal.timeout(8000),
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
   });
   if (!res.ok) return null;
   const data = (await res.json()) as { rating?: number; userRatingCount?: number; reviews?: PlacesReview[] };
@@ -126,7 +144,7 @@ async function fromPublicListing(): Promise<GooglePlaceView | null> {
   const page = await fetch("https://www.google.com/maps?cid=" + googleBusiness.cid + "&hl=en", {
     headers: { "User-Agent": "Mozilla/5.0", "Accept-Language": "en" },
     signal: AbortSignal.timeout(8000),
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
   });
   if (!page.ok) return null;
   const html = await page.text();
@@ -135,7 +153,7 @@ async function fromPublicListing(): Promise<GooglePlaceView | null> {
   const preview = await fetch("https://www.google.com" + found[0].replace(/&amp;/g, "&"), {
     headers: { "User-Agent": "Mozilla/5.0", "Accept-Language": "en" },
     signal: AbortSignal.timeout(8000),
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
   });
   if (!preview.ok) return null;
   const parsed = parsePublicPlace(await preview.text());
