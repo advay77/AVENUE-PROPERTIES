@@ -1,0 +1,121 @@
+---
+description: Avenue Properties website — architecture, design system and house rules
+alwaysApply: true
+---
+
+# Avenue Properties — working rules
+
+A static marketing site for a real estate consultancy in Sector 75, Noida.
+**No build step, no framework, no package.json.** Open `index.html` and it runs.
+Do not introduce React, Vite, Tailwind, npm or a bundler unless explicitly asked.
+
+## File map
+
+```
+index.html        home
+buy.html          property for sale      } all three share one engine:
+rent.html         property for rent      } Avenue.listing() in avenue.js
+commercial.html   commercial + fit-out   }
+property.html     detail page, read as property.html?id=<slug>
+interiors.html    interior services
+about.html        about, services, testimonial carousel
+contact.html      map, enquiry form, list-your-property form
+setup.html        INTERNAL console (noindex) — connect/test alerts + Google reviews
+
+assets/css/avenue.css   the entire design system, 24 numbered sections
+assets/js/config.js     the ONLY file to edit to go live (credentials, business info)
+assets/js/data.js       demo inventory, localities, testimonials
+assets/js/avenue.js     all behaviour, organised as Avenue.<module>
+```
+
+Every page loads the three scripts in this order, at the end of `<body>`:
+`config.js` → `data.js` → `avenue.js`. Never change that order — `avenue.js`
+reads `window.AVENUE_CONFIG` and `window.AVENUE_DATA` at definition time.
+
+## The JS module map (`assets/js/avenue.js`)
+
+| Module | Responsibility |
+|---|---|
+| `Avenue.util` | `$`, `$$`, `el`, `esc`, `params`, `store`, `put`, `waLink`, `telLink`, `mapsLink` |
+| `hydrate()` | Fills every `[data-av="..."]` node from config — phone, address, hours, WhatsApp, maps, year |
+| `header()` | Sticky header, drawer, active-nav matching by filename |
+| `reveal()` | IntersectionObserver scroll-in, with a 2.6s safety net that force-shows everything |
+| `shortlist` | Saved properties in `localStorage` |
+| `searchConsole()` | Hero tabs rewrite the fields and route to the right page with query params |
+| `Avenue.cards` | `.card(p)` and `.row(p)` — the only two places property card markup exists |
+| `listing()` | Filters, sort, grid/list, pagination. Reads `data-purpose` / `data-segment` off `#listingRoot` |
+| `detail()` | Renders `property.html` from `?id=` |
+| `carousel()` | Testimonials |
+| `Avenue.forms` | Validation + submit → `Avenue.alerts` |
+| `Avenue.alerts` | Visitor + enquiry alerts, fanned out to every configured channel |
+| `Avenue.reviews` | Google Business reviews, with a sample fallback |
+
+## Hard rules
+
+**1. Never hardcode contact details in HTML.** Phone, address, hours, WhatsApp
+and map links all come from `config.js` through `data-av` attributes. If you need
+a new one, add a case to `hydrate()`.
+
+**2. Never write a colour literal in a component rule.** Every colour is a token
+on `:root` in `avenue.css` (`--red`, `--ink`, `--muted`, `--line`, `--tint`…).
+Changing the brand colour must stay a one-line edit.
+
+**3. Property card markup lives in exactly one place** — `Avenue.cards`. Do not
+hand-write a card in a page. If a page needs cards, give it a container and
+render into it.
+
+**4. The responsive contract.** The page body must never scroll sideways at any
+width from 360px to 1440px. Before claiming a layout change is done, check:
+
+```js
+document.documentElement.scrollWidth - document.documentElement.clientWidth  // must be 0
+```
+
+Breakpoints already in use — reuse them, do not invent new ones:
+`1180` (nav tightens) · `1080` (nav → drawer) · `1024` (utility strip hides,
+listing filters move above results) · `860` (grids → 2 col) · `680` (→ 1 col,
+call FAB appears) · `520` (search console stacks, forms → 1 col) · `390` (CTA
+label shortens).
+
+Any grid child holding text needs `min-width: 0`, and any `grid-template-columns`
+using `1fr` should be `minmax(0, 1fr)` — both overflow bugs already found here
+came from exactly that.
+
+**5. Evidence discipline — this is a real business.** Never invent a statistic,
+a RERA number, a certification, a client name, an award, a transaction count or
+a "verified listing" claim. Everything in `data.js` carries `demo: true` and
+renders a "Sample listing" badge, which `config.demoMode` controls. If you add
+content that is not sourced from the client, label it as sample.
+
+**6. Secrets.** `config.js` ships to the browser. Nothing belongs in it that
+cannot be public. The Telegram bot token is the one grey area — it is visible in
+page source, which is documented in README.md along with the Cloudflare Worker
+relay that avoids it. Never put a Google API key in without a referrer
+restriction, and never commit a real key to this repo.
+
+**7. Accessibility is not optional.** Keep the visible focus ring, keep ARIA on
+the tabs/drawer/filters, keep `prefers-reduced-motion` honoured, keep real
+`<label>`s. Interactive things are `<button>` or `<a>`, never a clickable `<div>`.
+
+## Conventions
+
+- Vanilla ES5-flavoured JS: `var`, `function`, no optional chaining, no JSX.
+  It runs with no transpiler, so keep it conservative.
+- Escape every interpolated string with `esc()` when building HTML.
+- Indian formatting throughout: `₹1.65 Cr`, `₹85 Lakh`, `1,595 sq.ft.`, `3 BHK`,
+  `200 sq.yd.`, phone as `+91 70119 66691`.
+- Copy voice: plain, specific, no marketing inflation. Short sentences. Say what
+  actually happens. No "seamless", "unparalleled", "one-stop solution".
+- Images are Unsplash placeholders. Keep the `?auto=format&fit=crop&w=…&q=…`
+  query shape so sizes stay sane.
+
+## Verify before saying it works
+
+There is no test suite. The verification is the browser:
+
+```bash
+python -m http.server 4173     # then open http://127.0.0.1:4173
+```
+
+Check the console is clean, check the overflow number above at 360px and
+1440px, and click the thing you changed. Do not claim a fix without doing this.
