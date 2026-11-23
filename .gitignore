@@ -8,3 +8,8 @@ Thumbs.db
 
 # Not used today, but keeps a future toolchain tidy
 node_modules/
+app-next/node_modules/
+app-next/.next/
+.npm-cache/
+.tmp/
+app-next/.verify/
