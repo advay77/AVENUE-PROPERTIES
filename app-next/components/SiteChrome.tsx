@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { IconBrand, IconChevron, IconClock, IconPhone, IconPin, IconWa } from "./icons";
+import { BrandLogo } from "./BrandLogo";
+import { IconChevron, IconClock, IconPhone, IconPin, IconWa } from "./icons";
+import { VisitorAlert } from "./VisitorAlert";
 import { business, mapsLink, telLink, waLink } from "@/lib/site";
 
 const NAV = [
@@ -103,9 +105,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
         <div className="shell">
           <nav className="nav" aria-label="Primary">
             <Link className="brand" href="/" aria-label="Avenue Properties, home">
-              <span className="brand-mark" aria-hidden="true">
-                <IconBrand />
-              </span>
+              <BrandLogo />
               <span className="brand-name">
                 Avenue<span>Properties</span>
               </span>
@@ -169,6 +169,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
         </div>
       </header>
 
+      <VisitorAlert />
       <main id="main">{children}</main>
 
       <footer className="site-footer">
@@ -176,9 +177,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
           <div className="foot-top">
             <div className="foot-about">
               <Link className="brand" href="/">
-                <span className="brand-mark" aria-hidden="true">
-                  <IconBrand />
-                </span>
+                <BrandLogo />
                 <span className="brand-name">
                   Avenue<span>Properties</span>
                 </span>

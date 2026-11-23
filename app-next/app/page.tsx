@@ -5,7 +5,8 @@ import { FeaturedGrid } from "@/components/FeaturedGrid";
 import { IconClock, IconHome, IconInfo, IconPhone, IconPin, IconWa } from "@/components/icons";
 import { Reviews } from "@/components/Reviews";
 import { SearchConsole } from "@/components/SearchConsole";
-import { business, categories, legacyHref, localities, mapsLink, telLink, waLink } from "@/lib/site";
+import { getGooglePlace } from "@/lib/google";
+import { business, categories, legacyHref, localities, mapsLink, sampleGoogleReviews, telLink, waLink } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: { absolute: "Avenue Properties — Real Estate Consultancy in Noida" },
@@ -21,7 +22,40 @@ export const metadata: Metadata = {
 const BUDGETS = ["Not decided yet", "Under ₹50 Lakh", "₹50 Lakh – ₹1 Crore", "₹1 Cr – ₹2 Cr", "₹2 Cr – ₹4 Cr", "Above ₹4 Cr", "Rental — monthly"];
 const INTENTS = ["Buy a property", "Rent a property", "Sell my property", "Rent out my property", "Lease commercial space", "Discuss interior services"];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const google = await getGooglePlace(sampleGoogleReviews.map((review) => ({ ...review, photo: "" })));
+  const agent: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    name: "Avenue Properties",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Shop No. 27, Aims Golf Avenue 1, Sector 75",
+      addressLocality: "Noida",
+      addressRegion: "Uttar Pradesh",
+      postalCode: "201301",
+      addressCountry: "IN",
+    },
+    telephone: "+91-70119-66691",
+    hasMap: google.profileUrl,
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        opens: "10:00",
+        closes: "20:00",
+      },
+    ],
+    areaServed: ["Noida", "Greater Noida"],
+  };
+  if (google.live && google.rating != null && google.total != null) {
+    agent.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: google.rating,
+      reviewCount: google.total,
+      bestRating: 5,
+    };
+  }
   return (
     <>
       <section className="hero">
@@ -172,7 +206,7 @@ export default function HomePage() {
             <h2>What clients say on Google</h2>
             <p>Ratings and reviews come straight from the Avenue Properties Google Business Profile, so nothing here is written by us. The button opens Google’s own review box — new reviews go directly to Google.</p>
           </div>
-          <Reviews />
+          <Reviews place={google} />
         </div>
       </section>
 
@@ -348,29 +382,7 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "RealEstateAgent",
-            name: "Avenue Properties",
-            address: {
-              "@type": "PostalAddress",
-              streetAddress: "Shop No. 27, Aims Golf Avenue 1, Sector 75",
-              addressLocality: "Noida",
-              addressRegion: "Uttar Pradesh",
-              postalCode: "201301",
-              addressCountry: "IN",
-            },
-            telephone: "+91-70119-66691",
-            openingHoursSpecification: [
-              {
-                "@type": "OpeningHoursSpecification",
-                dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                opens: "10:00",
-                closes: "20:00",
-              },
-            ],
-            areaServed: ["Noida", "Greater Noida"],
-          }),
+          __html: JSON.stringify(agent),
         }}
       />
     </>

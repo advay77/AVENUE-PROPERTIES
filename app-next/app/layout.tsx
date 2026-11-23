@@ -25,9 +25,7 @@ export const metadata: Metadata = {
   },
   description:
     "Avenue Properties is a real estate consultancy in Sector 75, Noida. Residential and commercial property buying, selling, renting and leasing, with valuation, documentation coordination and interior services.",
-  icons: {
-    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23C91427'/%3E%3Cpath d='M16 7 8 14v11h5v-6h6v6h5V14z' fill='%23fff'/%3E%3C/svg%3E",
-  },
+  icons: { icon: "/logo.png", apple: "/logo.png" },
 };
 
 export const viewport: Viewport = {

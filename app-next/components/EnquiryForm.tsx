@@ -72,7 +72,7 @@ export function EnquiryForm({
     consent: `${idPrefix}Consent`,
   };
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const digits = fields.phone.replace(/\D/g, "");
     const nameBad = fields.name.trim().length < 2;
@@ -96,6 +96,18 @@ export function EnquiryForm({
       ...(extra || {}),
     };
     saveEnquiry(payload);
+    let delivered = false;
+    try {
+      const res = await fetch("/api/alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "enquiry", path: location.pathname, ...payload }),
+      });
+      const data = (await res.json().catch(() => null)) as { delivered?: boolean } | null;
+      delivered = Boolean(data && data.delivered);
+    } catch {
+      delivered = false;
+    }
     setSending(false);
     setFields({
       ...empty,
@@ -103,10 +115,13 @@ export function EnquiryForm({
       budget: budgetOptions?.[0] || "",
       message: defaultMessage || "",
     });
-    setOk(
-      `Alerts are not connected yet, so this enquiry was saved in this browser only — see setup.html. Connect a channel in config.js and it will reach the phone instantly.`
-    );
-    toast("Enquiry saved. Connect an alert channel to receive it instantly.", "warn", 5200);
+    if (delivered) {
+      setOk("The office has this on the instant alert and will call you back during working hours.");
+      toast("Enquiry sent. The office has been notified.", "ok");
+    } else {
+      setOk("Saved in this browser. The instant alert is not switched on yet — once the Telegram bot is added, new enquiries reach the office immediately.");
+      toast("Enquiry saved. The instant alert is not switched on yet.", "warn", 5200);
+    }
   }
 
   const form = (

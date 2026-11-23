@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EnquiryForm } from "@/components/EnquiryForm";
-import { IconBrand, IconCheck, IconInfo, IconPin, IconWa } from "@/components/icons";
+import { BrandLogo } from "@/components/BrandLogo";
+import { IconCheck, IconInfo, IconPin, IconWa } from "@/components/icons";
 import { PropertyCard } from "@/components/PropertyCard";
 import { business, demoMode, KIND_LABEL, properties, telLink, waLink, type Property } from "@/lib/site";
 
@@ -116,7 +117,7 @@ export default async function PropertyPage({ params }: { params: Promise<Params>
             <aside className="detail-aside">
               <div className="agent-card">
                 <div className="agent-meta">
-                  <span className="brand-mark" aria-hidden="true"><IconBrand size={22} /></span>
+                  <BrandLogo />
                   <span>
                     <strong>{business.name}</strong>
                     <span>{business.locality} · open all days, 10 AM – 8 PM</span>

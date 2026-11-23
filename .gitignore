@@ -1,6 +1,11 @@
 # Vercel CLI link metadata (project + org ids) — machine-local
 .vercel
 
+# Secrets. .env.example stays so the variable names are documented.
+.env
+.env.*
+!.env.example
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

@@ -1,4 +1,5 @@
 import raw from "./inventory.json";
+import { googleBusiness } from "./google";
 
 export const business = {
   name: "Avenue Properties",
@@ -22,7 +23,7 @@ export function telLink() {
 }
 
 export function mapsLink() {
-  return `https://maps.google.com/?q=${encodeURIComponent(business.mapsQuery)}`;
+  return googleBusiness.mapsUrl;
 }
 
 export function waLink(message?: string) {

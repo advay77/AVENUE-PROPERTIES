@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EnquiryForm } from "@/components/EnquiryForm";
-import { IconClock, IconInfo, IconPhone, IconPin, IconWa } from "@/components/icons";
+import { IconClock, IconPhone, IconPin, IconWa } from "@/components/icons";
+import { googleBusiness } from "@/lib/google";
 import { business, mapsLink, telLink, waLink } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ const BUDGETS = ["Not decided yet", "Under ₹50 Lakh", "₹50 Lakh – ₹1 Cro
 const LIST_INTENTS = ["Sell this property", "Rent it out", "Lease it (commercial)", "Just get a valuation"];
 
 export default function ContactPage() {
-  const map = `https://www.google.com/maps?q=${encodeURIComponent(business.mapsQuery)}&output=embed`;
+  const map = `https://www.google.com/maps?q=${googleBusiness.lat},${googleBusiness.lng}&z=17&output=embed`;
   return (
     <>
       <section className="page-hero">
@@ -82,10 +83,6 @@ export default function ContactPage() {
               <div className="map">
                 <iframe title="Map showing Avenue Properties, Sector 75, Noida" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={map} />
               </div>
-              <p className="note note--ink" style={{ marginTop: 14 }}>
-                <IconInfo />
-                <span>The map is a keyless Google embed and points at the address above. Swap it for the exact Google Business Profile pin once that profile link is shared — same place in the code, one line.</span>
-              </p>
             </div>
             <EnquiryForm
               idPrefix="f"
